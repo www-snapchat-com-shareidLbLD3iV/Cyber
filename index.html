@@ -2,506 +2,547 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TITAN_OS v250 | GHOST_LEVIATHAN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TITAN_OS v500 | SINGULARITY [SOC]</title>
     
     <style>
         /* ============================================================
-           CYBERPUNK CORE DESIGN - THE BLACK BOX
+           TITAN_OS v500 - SINGULARITY ENGINE CSS
            ============================================================ */
         :root {
-            --gold: #d4af37; --bg: #020202; --panel: #0a0a0c;
-            --border: #1a1a1c; --neon: #00ff41; --danger: #ff003c;
-            --blue: #00d2ff; --purple: #bc13fe; --terminal: #050505;
+            --gold: #d4af37; --bg: #030304; --panel: #0a0a0d;
+            --border: #1a1a24; --neon-g: #00ff41; --neon-r: #ff003c;
+            --neon-b: #00d2ff; --neon-p: #bc13fe; --warning: #ffaa00;
+            --shadow: rgba(0, 210, 255, 0.15);
+            --font-main: 'Consolas', 'Courier New', monospace;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; user-select: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        body, html { width: 100vw; height: 100vh; background: var(--bg); color: #fff; font-family: var(--font-main); overflow: hidden; }
+
+        /* FX Layers */
+        .scanlines { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.4) 50%); background-size: 100% 4px; pointer-events: none; z-index: 9999; opacity: 0.3; }
+        .vignette { position: fixed; inset: 0; background: radial-gradient(circle, transparent 50%, #000 120%); pointer-events: none; z-index: 9998; }
+
+        /* Boot Sequence */
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #boot-text { width: 80%; max-height: 80%; overflow: hidden; color: var(--neon-g); font-size: 0.85rem; line-height: 1.6; text-shadow: 0 0 5px var(--neon-g); }
+        .glitch { animation: glitch-anim 0.2s infinite; }
+        @keyframes glitch-anim { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+
+        /* Shell Grid System */
+        #singularity-shell { display: none; width: 100%; height: 100%; grid-template-rows: 40px calc(100vh - 70px) 30px; }
         
-        body, html { 
-            width: 100%; height: 100%; background: var(--bg); color: #fff; 
-            font-family: 'Consolas', 'Monaco', monospace; overflow: hidden;
-        }
+        /* Top Header */
+        header { background: #050508; border-bottom: 1px solid var(--neon-b); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-size: 0.7rem; color: var(--neon-b); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-b); }
+        .sys-stats { display: flex; gap: 20px; color: var(--gold); }
 
-        /* Scanline Overlay */
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%);
-            background-size: 100% 4px; pointer-events: none; z-index: 9999; opacity: 0.3;
-        }
+        /* Main Workspace Grid */
+        #workspace { display: grid; grid-template-columns: 300px 1fr 350px; grid-template-rows: 60% 40%; gap: 5px; padding: 5px; background: #000; }
+        
+        /* Panels */
+        .panel { background: rgba(5, 5, 8, 0.9); border: 1px solid var(--border); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { background: #08080a; padding: 8px 12px; border-bottom: 1px solid #1a1a24; font-size: 0.65rem; font-weight: bold; color: #888; display: flex; justify-content: space-between; text-transform: uppercase; }
+        .panel-header.accent-r { border-bottom-color: var(--neon-r); color: var(--neon-r); }
+        .panel-header.accent-g { border-bottom-color: var(--neon-g); color: var(--neon-g); }
+        .panel-header.accent-b { border-bottom-color: var(--neon-b); color: var(--neon-b); }
+        .panel-header.accent-gold { border-bottom-color: var(--gold); color: var(--gold); }
+        .panel-body { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.75rem; }
 
-        /* Boot Loading Sequence */
-        #boot-screen {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
-            display: flex; flex-direction: column; padding: 40px; color: var(--neon);
-            font-size: 0.85rem; line-height: 1.6; overflow-y: auto;
-        }
+        /* Specific Panel Placements */
+        #panel-nav { grid-column: 1; grid-row: 1 / span 2; }
+        #panel-map { grid-column: 2; grid-row: 1; position: relative; }
+        #panel-radar { grid-column: 2; grid-row: 2; }
+        #panel-ai { grid-column: 3; grid-row: 1; }
+        #panel-intel { grid-column: 3; grid-row: 2; }
 
-        /* Main OS Shell */
-        #os-shell { display: none; flex-direction: column; height: 100%; position: relative; }
+        /* Cyber Map Canvas */
+        #cyber-map { width: 100%; height: 100%; background: #020202; display: block; }
+        .map-overlay { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px; border: 1px solid var(--neon-b); font-size: 0.6rem; color: var(--neon-b); }
 
-        header {
-            height: 50px; background: #050505; border-bottom: 2px solid var(--gold);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-            font-size: 0.7rem; color: var(--gold); font-weight: 900; letter-spacing: 2px;
-        }
+        /* Radar UI */
+        .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        .input-group input { flex: 1; background: #050505; border: 1px solid #222; color: #fff; padding: 8px; font-family: var(--font-main); font-size: 0.7rem; }
+        .btn { background: #111; color: var(--gold); border: 1px solid var(--gold); padding: 0 15px; cursor: pointer; font-family: inherit; font-size: 0.7rem; font-weight: bold; transition: 0.2s; }
+        .btn:hover { background: var(--gold); color: #000; }
+        .btn.danger { border-color: var(--neon-r); color: var(--neon-r); }
+        .btn.danger:hover { background: var(--neon-r); color: #000; }
 
-        #workspace { flex: 1; position: relative; overflow: hidden; }
+        .result-card { background: #080808; border-right: 3px solid var(--neon-g); padding: 10px; margin-bottom: 8px; font-size: 0.7rem; border-radius: 2px; }
+        .token-str { background: #000; padding: 5px; color: #aaa; word-break: break-all; border: 1px dashed #333; margin: 5px 0; user-select: text; }
+        
+        /* Control Nav UI */
+        .nav-item { padding: 12px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .nav-item:hover { background: #111; padding-right: 20px; border-right: 2px solid var(--gold); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px; }
+        .stat-box { background: #050505; border: 1px solid #222; padding: 10px; text-align: center; }
+        .stat-val { font-size: 1.2rem; font-weight: bold; color: var(--neon-b); }
+        .stat-lbl { font-size: 0.5rem; color: #666; }
 
-        /* Window System Management */
-        .win {
-            position: absolute; inset: 10px; background: rgba(5, 5, 5, 0.98);
-            border: 1px solid var(--border); border-radius: 12px; display: none;
-            flex-direction: column; backdrop-filter: blur(25px); z-index: 10;
-            box-shadow: 0 0 60px rgba(0,0,0,1);
-            transition: opacity 0.3s ease;
-        }
-        .win.active { display: flex; z-index: 100; border-color: var(--gold); }
+        /* AI Chat */
+        .chat-area { display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 4px; background: #0a0a0a; border: 1px solid #111; line-height: 1.4; user-select: text;}
+        .msg.sys { border-left: 2px solid var(--gold); }
+        .msg.usr { border-right: 2px solid var(--neon-b); text-align: left; }
+        .msg b { font-size: 0.6rem; color: #888; display: block; margin-bottom: 5px; text-transform: uppercase;}
 
-        .win-head {
-            background: #0d0d0d; padding: 15px 20px; display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid #222;
-            border-radius: 12px 12px 0 0;
-        }
-        .win-title { font-size: 0.75rem; color: var(--gold); font-weight: 800; text-transform: uppercase; }
-        .win-close { color: var(--danger); font-size: 1.2rem; cursor: pointer; }
+        /* Shadow Intercept */
+        .log-line { font-size: 0.65rem; margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 4px; color: #ccc; }
+        .log-time { color: var(--neon-p); margin-right: 5px; }
 
-        .win-body { flex: 1; overflow-y: auto; padding: 20px; }
+        /* Forensics / Tools */
+        .tool-box { background: #050505; border: 1px dashed #333; padding: 10px; margin-bottom: 10px; }
+        
+        /* Footer */
+        footer { background: #020202; border-top: 1px solid #111; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 0.6rem; color: #555; }
+        .pulse-dot { display: inline-block; width: 6px; height: 6px; background: var(--neon-g); border-radius: 50%; box-shadow: 0 0 8px var(--neon-g); margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
 
-        /* AI Chat Feed UI */
-        .chat-feed { display: flex; flex-direction: column; gap: 15px; }
-        .bubble { padding: 15px; border-radius: 8px; max-width: 95%; line-height: 1.6; font-size: 0.85rem; word-wrap: break-word; }
-        .bubble.sys { background: #0d0d12; border-right: 4px solid var(--gold); color: #e0e0e0; }
-        .bubble.usr { background: #1a1a22; border-left: 4px solid var(--blue); align-self: flex-end; }
-        .bubble.err { background: #2a0a0a; border-right: 4px solid var(--danger); color: #ff9999; }
-        .bubble b { font-size: 0.65rem; color: var(--gold); display: block; margin-bottom: 6px; text-transform: uppercase; }
-        pre { background: #000; padding: 12px; border: 1px solid #333; overflow-x: auto; color: var(--neon); border-radius: 6px; margin-top: 10px; font-size: 0.8rem; }
-
-        /* Unified Input Dock */
-        .dock-input {
-            background: #000; padding: 15px; border-top: 1px solid var(--border);
-            display: flex; gap: 10px; align-items: center;
-        }
-        .dock-input input { 
-            flex: 1; background: #0a0a0a; border: 1px solid #2a2a2a; color: #fff; 
-            padding: 12px 15px; border-radius: 6px; font-size: 0.85rem; font-family: inherit;
-        }
-        .dock-input select {
-            background: #000; color: var(--gold); border: 1px solid var(--gold); 
-            font-size: 0.7rem; border-radius: 6px; height: 44px; padding: 0 10px;
-        }
-        .btn-exe { 
-            background: var(--gold); color: #000; border: none; padding: 0 25px; 
-            border-radius: 6px; font-weight: 900; cursor: pointer; height: 44px;
-        }
-
-        /* Recon Radar & Secret Cards */
-        .search-container { background: #0a0a0c; padding: 20px; border-radius: 10px; border: 1px solid #1a1a1c; margin-bottom: 20px; }
-        .secret-card {
-            background: #080808; border: 1px solid var(--border); border-radius: 8px;
-            margin-bottom: 15px; padding: 15px; border-left: 5px solid var(--danger);
-            position: relative; animation: slideIn 0.4s ease-out;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .secret-type { font-size: 0.6rem; color: var(--danger); font-weight: bold; margin-bottom: 5px; }
-        .secret-val { background: #000; padding: 12px; border-radius: 4px; font-size: 0.8rem; color: #ccc; word-break: break-all; margin: 10px 0; border: 1px dashed #333; }
-        .secret-meta { font-size: 0.7rem; color: #666; display: flex; justify-content: space-between; }
-
-        /* Intelligence Live Stream */
-        .intel-log {
-            background: #050505; border: 1px solid #1a1a1a; padding: 12px;
-            font-size: 0.75rem; border-radius: 4px; line-height: 1.5; margin-bottom: 8px;
-            border-right: 3px solid var(--purple); animation: blink 2s infinite;
-        }
-        @keyframes blink { 50% { border-right-color: transparent; } }
-        .intel-time { color: var(--blue); margin-right: 8px; }
-        .intel-tag { color: var(--purple); font-weight: bold; margin-right: 8px; }
-
-        /* Arsenal Tools */
-        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card-tool { 
-            background: #0d0d0f; border: 1px solid #222; padding: 20px; 
-            border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s;
-        }
-        .card-tool:hover { border-color: var(--gold); background: #151518; }
-        .tool-icon { font-size: 2rem; margin-bottom: 10px; }
-        .tool-name { font-size: 0.7rem; color: var(--gold); font-weight: bold; }
-
-        /* Footer Console */
-        #sys-status {
-            height: 35px; background: #000; border-top: 1px solid #111;
-            display: flex; align-items: center; padding: 0 20px; font-size: 0.65rem;
-            color: var(--neon); justify-content: space-between;
-        }
-
-        /* Navigation Bar */
-        nav {
-            height: 75px; background: #000; display: flex; border-top: 1px solid #111;
-            justify-content: space-around; align-items: center;
-        }
-        .nav-item {
-            color: #444; text-align: center; cursor: pointer; transition: 0.3s;
-            display: flex; flex-direction: column; gap: 5px; width: 20%;
-        }
-        .nav-item.active { color: var(--gold); }
-        .nav-item i { font-size: 1.4rem; font-style: normal; }
-        .nav-item span { font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+        /* Modal / Kill Switch */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #050505; border: 1px solid var(--neon-r); width: 500px; padding: 20px; box-shadow: 0 0 30px rgba(255,0,60,0.2); }
 
     </style>
 </head>
 <body>
 
 <div class="scanlines"></div>
+<div class="vignette"></div>
 
 <div id="boot-screen">
-    <div id="boot-logs"></div>
+    <div id="boot-text"></div>
 </div>
 
-<div id="os-shell">
+<div id="singularity-shell">
     <header>
-        <span>TITAN_OS // LEVIATHAN_GHOST_v250</span>
-        <span id="sys-clock">00:00:00</span>
+        <div>TITAN_OS <span style="color:#fff">v500</span> // SINGULARITY_CORE</div>
+        <div class="sys-stats">
+            <span id="sys-clock">00:00:00</span>
+            <span>MEM: <span id="mem-val" style="color:var(--neon-g)">12%</span></span>
+            <span>NET: ENCRYPTED</span>
+        </div>
     </header>
 
     <div id="workspace">
         
-        <div id="win-core" class="win active">
-            <div class="win-head"><span class="win-title">NEURAL_COMMAND_CENTER</span></div>
-            <div class="win-body">
-                <div class="chat-feed" id="chat-stream">
-                    <div class="bubble sys">
-                        <b>[TITAN_SYSTEM]</b> 
-                        مرحباً أيها القائد. نظام GHOST_LEVIATHAN قيد التشغيل.<br>
-                        تم تفعيل درع الحماية وربط محركات الاستخبارات العميقة.
+        <div id="panel-nav" class="panel">
+            <div class="panel-header accent-gold">COMMAND_CENTER</div>
+            <div class="panel-body" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <div style="font-size:0.6rem; color:#888; margin-bottom:10px;">SYSTEM_PROTOCOLS</div>
+                    <div class="input-group"><input type="password" id="cfg-gh" placeholder="GITHUB_API_KEY"></div>
+                    <div class="input-group"><input type="password" id="cfg-gem" placeholder="GEMINI_API_KEY"></div>
+                    <button class="btn" style="width:100%; margin-bottom:20px;" onclick="saveConfig()">SECURE KEYS</button>
+
+                    <div style="font-size:0.6rem; color:#888; margin-bottom:10px;">AUTO-DECRYPTION LAB</div>
+                    <div class="tool-box">
+                        <input type="text" id="hash-input" placeholder="Enter Hash / Base64..." style="width:100%; background:#000; border:1px solid #333; color:var(--neon-b); padding:5px; margin-bottom:5px; font-size:0.65rem;">
+                        <button class="btn" style="width:100%; font-size:0.6rem;" onclick="crackHash()">DECODE / CRACK</button>
+                        <div id="hash-output" style="margin-top:5px; font-size:0.65rem; color:var(--neon-g); word-break:break-all;"></div>
                     </div>
                 </div>
-            </div>
-            <div class="dock-input">
-                <select id="ai-engine">
-                    <option value="gemini">GEMINI_PRO</option>
-                    <option value="gpt">GPT_3.5_T</option>
-                </select>
-                <input type="text" id="ai-input" placeholder="أدخل أمراً للتحليل الذكي..." onkeypress="if(event.key==='Enter') executeAI()">
-                <button class="btn-exe" onclick="executeAI()">EXE</button>
-            </div>
-        </div>
 
-        <div id="win-radar" class="win">
-            <div class="win-head"><span class="win-title">DEEP_SECRET_RADAR</span></div>
-            <div class="win-body">
-                <div class="search-container">
-                    <p style="font-size:0.7rem; color:#888; margin-bottom:12px;">البحث عن التوكنات المسربة (Discord, Telegram) داخل الأكواد المستهدفة.</p>
-                    <div class="dock-input" style="border:1px solid #333; border-radius:8px;">
-                        <input type="text" id="target-recon" placeholder="اسم الحساب أو المستودع (e.g. user/repo)...">
-                        <button class="btn-exe" style="background:var(--blue)" onclick="runDeepScan()">SCAN</button>
-                    </div>
-                </div>
-                <div id="scan-feedback" style="font-size:0.7rem; color:var(--neon); margin-bottom:15px; display:none;">[!] جاري تحليل الأكواد المسربة...</div>
-                <div id="radar-output"></div>
-            </div>
-        </div>
-
-        <div id="win-intel" class="win">
-            <div class="win-head"><span class="win-title">INTELLIGENCE_LIVE_STREAM</span></div>
-            <div class="win-body">
-                <div id="live-stream-container">
-                    <div class="intel-log"><span class="intel-time">00:00</span><span class="intel-tag">[SYS]</span> Monitoring initialized. Awaiting data...</div>
+                <div class="stat-grid">
+                    <div class="stat-box"><div class="stat-val" id="st-scan">0</div><div class="stat-lbl">NODES SCANNED</div></div>
+                    <div class="stat-box"><div class="stat-val" style="color:var(--neon-r)" id="st-vuln">0</div><div class="stat-lbl">LIVE THREATS</div></div>
+                    <div class="stat-box"><div class="stat-val" style="color:var(--neon-p)" id="st-int">0</div><div class="stat-lbl">INTERCEPTS</div></div>
+                    <div class="stat-box"><div class="stat-val" id="st-atk">0</div><div class="stat-lbl">TAKEDOWNS</div></div>
                 </div>
             </div>
         </div>
 
-        <div id="win-arsenal" class="win">
-            <div class="win-head"><span class="win-title">TACTICAL_ARSENAL</span></div>
-            <div class="win-body">
-                <div class="grid-tools" id="tools-grid">
-                    </div>
+        <div id="panel-map" class="panel">
+            <div class="panel-header accent-b">GEO_CYBER_MAP_MATRIX</div>
+            <div class="map-overlay">LIVE_TRAFFIC: <span id="traf-val">0</span> Gbps</div>
+            <canvas id="cyber-map"></canvas>
+        </div>
+
+        <div id="panel-radar" class="panel">
+            <div class="panel-header accent-g">ZERO-DAY_OSINT_RADAR</div>
+            <div class="panel-body" style="display:flex; flex-direction:column;">
+                <div class="input-group">
+                    <input type="text" id="dork-query" placeholder="Enter Dork (e.g. filename:config.json 'bot_token')...">
+                    <button class="btn" onclick="executeDork()">CRAWL</button>
+                </div>
+                <div id="radar-status" style="font-size:0.6rem; color:var(--warning); display:none;">[!] CONNECTING TO GLOBAL REPOSITORIES...</div>
+                <div id="radar-results" style="flex:1; overflow-y:auto; margin-top:10px;">
+                    <div style="color:#444; text-align:center; margin-top:20px; font-size:0.7rem;">WAITING FOR DIRECTIVE...</div>
+                </div>
             </div>
         </div>
 
-        <div id="win-config" class="win">
-            <div class="win-head"><span class="win-title">SYSTEM_CONFIGURATION</span></div>
-            <div class="win-body">
-                <div class="search-container" style="display:flex; flex-direction:column; gap:15px;">
-                    <div><label style="font-size:0.65rem; color:var(--gold)">GEMINI_API_KEY:</label><input type="password" id="key-gem" style="width:100%; margin-top:5px;"></div>
-                    <div><label style="font-size:0.65rem; color:var(--gold)">GITHUB_RECON_TOKEN:</label><input type="password" id="key-gh" style="width:100%; margin-top:5px;"></div>
-                    <div><label style="font-size:0.65rem; color:var(--gold)">OPENAI_API_KEY:</label><input type="password" id="key-gpt" style="width:100%; margin-top:5px;"></div>
-                    <button class="btn-exe" style="width:100%; margin-top:10px;" onclick="saveConfig()">SAVE PROTOCOLS</button>
-                </div>
+        <div id="panel-ai" class="panel">
+            <div class="panel-header accent-gold">LEVIATHAN_AI_CORE</div>
+            <div class="panel-body chat-area" id="ai-chat">
+                <div class="msg sys"><b>LEVIATHAN</b> System initialized. Ready to perform behavioral profiling and exploit generation.</div>
             </div>
+            <div class="input-group" style="padding:10px; border-top:1px solid #111; background:#050505; margin:0;">
+                <input type="text" id="ai-input" placeholder="Query AI...">
+                <button class="btn" onclick="sendAI()">EXE</button>
+            </div>
+        </div>
+
+        <div id="panel-intel" class="panel">
+            <div class="panel-header accent-p" style="border-bottom-color:var(--neon-p); color:var(--neon-p);">SHADOW_INTERCEPTOR_FEED</div>
+            <div class="panel-body" id="shadow-log">
+                </div>
         </div>
 
     </div>
 
-    <div id="sys-status">
-        <span id="status-msg">SYSTEM_READY...</span>
-        <span id="mem-usage">MEM: 14%</span>
-    </div>
+    <footer>
+        <div><span class="pulse-dot"></span> CONNECTION: SECURE TOR NODE</div>
+        <div>SOC TERMINAL | UNAUTHORIZED ACCESS PROHIBITED</div>
+    </footer>
+</div>
 
-    <nav>
-        <div class="nav-item active" onclick="tab('win-core', this)"><i>🧠</i><span>Core</span></div>
-        <div class="nav-item" onclick="tab('win-radar', this)"><i>📡</i><span>Radar</span></div>
-        <div class="nav-item" onclick="tab('win-intel', this)"><i>👁️</i><span>Intel</span></div>
-        <div class="nav-item" onclick="tab('win-arsenal', this)"><i>⚔️</i><span>Arsenal</span></div>
-        <div class="nav-item" onclick="tab('win-config', this)"><i>⚙️</i><span>Config</span></div>
-    </nav>
+<div id="modal-overlay">
+    <div class="modal-box">
+        <h3 style="color:var(--neon-r); font-size:1rem; margin-bottom:15px; text-transform:uppercase;">[!] KILL_SWITCH_PROTOCOL INITIATED</h3>
+        <p style="font-size:0.75rem; color:#ccc; margin-bottom:15px;">Target Neutralization Sequence. This will generate an official Abuse Report to the hosting provider to revoke the token and ban the attacker's infrastructure.</p>
+        <textarea id="abuse-template" style="width:100%; height:150px; background:#000; color:var(--warning); border:1px solid #333; padding:10px; font-family:var(--font-main); font-size:0.7rem; margin-bottom:15px;" readonly></textarea>
+        <div style="display:flex; justify-content:space-between;">
+            <button class="btn" onclick="document.getElementById('modal-overlay').style.display='none'">ABORT</button>
+            <button class="btn danger" onclick="executeTakedown()">DISPATCH TAKEDOWN</button>
+        </div>
+    </div>
 </div>
 
 <script>
     /* ============================================================
-       TITAN_OS v250 KERNEL LOGIC
+       TITAN_OS v500 - KERNEL LOGIC
        ============================================================ */
 
-    let KEYS = { gemini: "", gpt: "", github: "" };
-    const PROXY = "https://corsproxy.io/?";
+    let CONFIG = { gh: "", gem: "" };
+    let STATS = { scan: 0, vuln: 0, int: 0, atk: 0 };
+    let nodes = []; // For Cyber Map
 
-    const BOOT_SEQUENCE = [
-        "BOOTING TITAN_OS KERNEL v250...",
-        "LOADING LEVIATHAN SECURITY MODULES... [OK]",
-        "INITIALIZING GHOST_RECON RADAR... [OK]",
-        "ESTABLISHING PROXY TUNNEL... [ACTIVE]",
-        "SANCHRONIZING NEURAL NETWORKS...",
-        "SYSTEM ACCESS GRANTED. WELCOME OPERATOR."
+    // --- 1. BOOT SEQUENCE ---
+    const bootLogs = [
+        "KERNEL: Booting TITAN_OS v500 [SINGULARITY]...",
+        "SYS: Allocating Memory... [OK]",
+        "NET: Establishing secure proxy tunnels...",
+        "SEC: Loading Honeypot Matrix...",
+        "AI: Waking LEVIATHAN Neural Engine...",
+        "OSINT: Linking Global Dorking API...",
+        "STATUS: SOC DASHBOARD ONLINE. AWAITING COMMANDS."
     ];
 
-    // 1. Initializer
-    async function runBoot() {
-        const out = document.getElementById('boot-logs');
-        for (let line of BOOT_SEQUENCE) {
-            let div = document.createElement('div');
-            div.innerText = `> ${line}`;
-            out.appendChild(div);
+    async function startBoot() {
+        const bootDiv = document.getElementById('boot-text');
+        for (let i = 0; i < bootLogs.length; i++) {
+            let p = document.createElement('div');
+            p.innerText = `> ${bootLogs[i]}`;
+            if(i === bootLogs.length -1) p.className = 'glitch';
+            bootDiv.appendChild(p);
             await new Promise(r => setTimeout(r, 400));
         }
         setTimeout(() => {
             document.getElementById('boot-screen').style.display = 'none';
-            document.getElementById('os-shell').style.display = 'flex';
+            document.getElementById('singularity-shell').style.display = 'grid';
             loadConfig();
-            initArsenal();
+            initMap();
             startDaemons();
-        }, 800);
+        }, 1000);
     }
 
-    // 2. AI Command Engine (Leviathan)
-    async function executeAI() {
-        const input = document.getElementById('ai-input');
-        const engine = document.getElementById('ai-engine').value;
-        const text = input.value.trim();
-        if(!text) return;
-
-        addChat(text, 'usr');
-        input.value = "";
-        setStatus(`QUERYING_${engine.toUpperCase()}...`);
-
-        if(engine === 'gemini') {
-            await callGemini(text);
-        } else {
-            await callGPT(text);
+    // --- 2. CONFIG & STATS ---
+    function saveConfig() {
+        CONFIG.gh = document.getElementById('cfg-gh').value;
+        CONFIG.gem = document.getElementById('cfg-gem').value;
+        localStorage.setItem('titan_v500', JSON.stringify(CONFIG));
+        logShadow("System keys locked and encrypted locally.");
+    }
+    
+    function loadConfig() {
+        const d = localStorage.getItem('titan_v500');
+        if(d) {
+            CONFIG = JSON.parse(d);
+            document.getElementById('cfg-gh').value = CONFIG.gh;
+            document.getElementById('cfg-gem').value = CONFIG.gem;
         }
     }
 
-    async function callGemini(txt) {
-        if(!KEYS.gemini) { addChat("خطأ: مفتاح Gemini مفقود.", "err"); return; }
-        try {
-            const api = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEYS.gemini}`;
-            const res = await fetch(PROXY + encodeURIComponent(api), {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: txt }] }] })
-            });
-            const data = await res.json();
-            const reply = data.candidates[0].content.parts[0].text;
-            addChat(reply, 'sys');
-        } catch(e) { addChat(`فشل Gemini: ${e.message}`, 'err'); }
+    function updateStats(type) {
+        STATS[type]++;
+        document.getElementById(`st-${type}`).innerText = STATS[type];
     }
 
-    async function callGPT(txt) {
-        if(!KEYS.gpt) { addChat("خطأ: مفتاح GPT مفقود.", "err"); return; }
-        try {
-            const api = `https://api.openai.com/v1/chat/completions`;
-            const res = await fetch(PROXY + encodeURIComponent(api), {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEYS.gpt}` },
-                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: txt}] })
-            });
-            const data = await res.json();
-            addChat(data.choices[0].message.content, 'sys');
-        } catch(e) { addChat(`فشل GPT: ${e.message}`, 'err'); }
+    // --- 3. CYBER MAP ENGINE (CANVAS) ---
+    const canvas = document.getElementById('cyber-map');
+    const ctx = canvas.getContext('2d');
+    
+    function initMap() {
+        resizeMap();
+        window.addEventListener('resize', resizeMap);
+        for(let i=0; i<30; i++) createNode(false);
+        requestAnimationFrame(drawMap);
     }
 
-    // 3. Deep Recon Radar (Ghost Recon)
-    async function runDeepScan() {
-        const target = document.getElementById('target-recon').value.trim();
-        const output = document.getElementById('radar-output');
-        const feedback = document.getElementById('scan-feedback');
+    function resizeMap() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight - 30; // minus header
+    }
+
+    function createNode(isTarget) {
+        nodes.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            c: isTarget ? '#ff003c' : '#00d2ff',
+            r: isTarget ? 3 : 1.5,
+            links: []
+        });
+    }
+
+    function drawMap() {
+        ctx.fillStyle = 'rgba(2,2,2,0.2)'; // trail effect
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        nodes.forEach(n => {
+            n.x += n.vx; n.y += n.vy;
+            if(n.x < 0 || n.x > canvas.width) n.vx *= -1;
+            if(n.y < 0 || n.y > canvas.height) n.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+            ctx.fillStyle = n.c;
+            ctx.fill();
+
+            // Draw connections
+            nodes.forEach(n2 => {
+                let d = Math.hypot(n.x - n2.x, n.y - n2.y);
+                if(d < 60) {
+                    ctx.beginPath();
+                    ctx.moveTo(n.x, n.y);
+                    ctx.lineTo(n2.x, n2.y);
+                    ctx.strokeStyle = n.c === '#ff003c' ? 'rgba(255,0,60,0.2)' : 'rgba(0,210,255,0.05)';
+                    ctx.stroke();
+                }
+            });
+        });
+        requestAnimationFrame(drawMap);
+    }
+
+    function addTargetNode() {
+        createNode(true);
+        document.getElementById('traf-val').innerText = (Math.random() * 5 + 1).toFixed(2);
+    }
+
+    // --- 4. OSINT RADAR (GITHUB DORKING) ---
+    async function executeDork() {
+        const query = document.getElementById('dork-query').value.trim();
+        if(!query || !CONFIG.gh) { alert("Require Search Query and GitHub Key"); return; }
         
-        if(!target || !KEYS.github) { alert("أدخل الهدف وتوكن GitHub أولاً!"); return; }
-
-        feedback.style.display = 'block';
-        output.innerHTML = "";
-        setStatus(`SCANNING_SECRET_DATA: ${target}`);
-
+        const out = document.getElementById('radar-results');
+        const stat = document.getElementById('radar-status');
+        
+        out.innerHTML = ""; stat.style.display = 'block';
+        
         try {
-            // البحث عن ملفات تحتوي على كلمة "token" في المستودع
-            const searchUrl = `https://api.github.com/search/code?q=token+repo:${target}`;
-            const res = await fetch(searchUrl, { headers: { "Authorization": `token ${KEYS.github}` } });
+            const url = `https://api.github.com/search/code?q=${encodeURIComponent(query)}&per_page=5`;
+            const res = await fetch(url, { headers: { "Authorization": `token ${CONFIG.gh}` } });
             const data = await res.json();
 
             if(!data.items || data.items.length === 0) {
-                output.innerHTML = `<div style="color:var(--danger); text-align:center;">[!] لا توجد توكنات مكشوفة مباشرة.</div>`;
+                out.innerHTML = "<div style='color:#ff003c; text-align:center;'>NO INTEL FOUND.</div>";
             } else {
                 for(let item of data.items) {
-                    await analyzeFile(item, output);
+                    updateStats('scan');
+                    await analyzeFile(item, out);
                 }
             }
-        } catch(e) { output.innerHTML = `<div style="color:var(--danger);">ERROR: ${e.message}</div>`; }
-        finally { feedback.style.display = 'none'; }
+        } catch(e) { out.innerHTML = `<div style="color:red">ERROR: ${e.message}</div>`; }
+        finally { stat.style.display = 'none'; }
     }
 
     async function analyzeFile(item, container) {
         try {
-            const res = await fetch(item.url, { headers: { "Authorization": `token ${KEYS.github}` } });
-            const data = await res.json();
-            const code = atob(data.content);
+            const res = await fetch(item.url, { headers: { "Authorization": `token ${CONFIG.gh}` } });
+            const d = await res.json();
+            const code = atob(d.content);
 
-            // أنماط التوكنات (Telegram, Discord)
-            const patterns = {
-                telegram: /\d{9,10}:[a-zA-Z0-9_-]{35}/g,
-                discord: /[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27}/g
+            // Generic Token Finders
+            const rgx = {
+                TELEGRAM: /\d{9,10}:[a-zA-Z0-9_-]{35}/g,
+                DISCORD: /[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27}/g,
+                AWS: /AKIA[0-9A-Z]{16}/g
             };
 
-            for(let type in patterns) {
-                const matches = code.match(patterns[type]);
+            let found = false;
+            for(let t in rgx) {
+                const matches = code.match(rgx[t]);
                 if(matches) {
+                    found = true;
                     matches.forEach(m => {
-                        renderSecret(type, m, item.repository.full_name, item.path, container);
-                        if(type === 'telegram') checkBot(m, container);
+                        renderVulnCard(t, m, item.repository.full_name, container);
+                        if(t === 'TELEGRAM') checkLiveBot(m);
                     });
                 }
             }
+            if(!found) {
+                // If user searched a generic dork, just show the file
+                renderVulnCard('POTENTIAL_LEAK', item.path, item.repository.full_name, container);
+            }
         } catch(e) {}
     }
 
-    function renderSecret(type, val, repo, path, container) {
-        const card = document.createElement('div');
-        card.className = 'secret-card';
-        card.innerHTML = `
-            <div class="secret-type">[!] EXPOSED_${type.toUpperCase()}</div>
-            <div class="secret-val">${val}</div>
-            <div class="secret-meta"><span>REPO: ${repo}</span><button onclick="track('${val}')" style="background:var(--gold); border:none; padding:2px 8px; font-size:0.6rem; cursor:pointer;">TRACK</button></div>
+    function renderVulnCard(type, val, repo, container) {
+        const c = document.createElement('div');
+        c.className = 'result-card';
+        c.innerHTML = `
+            <div style="color:var(--neon-g); font-weight:bold; font-size:0.6rem; margin-bottom:5px;">[+] DETECTED: ${type}</div>
+            <div class="token-str">${val}</div>
+            <div style="color:#666; font-size:0.6rem; margin-bottom:8px;">SRC: ${repo}</div>
+            <div style="display:flex; gap:5px;">
+                <button class="btn" onclick="profileHacker('${repo}')">PROFILE_APT</button>
+                <button class="btn danger" onclick="openKillSwitch('${type}', '${val}', '${repo}')">KILL_SWITCH</button>
+            </div>
         `;
-        container.appendChild(card);
+        container.appendChild(c);
+        addTargetNode(); // Visual feedback on map
     }
 
-    async function checkBot(token, container) {
+    // --- 5. HIVE MIND & SHADOW INTERCEPTOR ---
+    async function checkLiveBot(token) {
         try {
             const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
-            const data = await res.json();
-            if(data.ok) {
-                const info = document.createElement('div');
-                info.style = "background:rgba(0,210,255,0.1); padding:10px; border-radius:4px; font-size:0.7rem; border:1px solid var(--blue); margin-top:5px;";
-                info.innerHTML = `<b style="color:var(--blue)">[BOT_LIVE]</b> Name: ${data.result.first_name} | @${data.result.username}`;
-                container.appendChild(info);
+            const d = await res.json();
+            if(d.ok) {
+                updateStats('vuln');
+                logShadow(`[BOT_LIVE] Captured Entity: @${d.result.username}`);
             }
         } catch(e) {}
     }
 
-    // 4. Intelligence Simulation
-    function track(token) {
-        tab('win-intel', document.querySelectorAll('.nav-item')[2]);
-        const stream = document.getElementById('live-stream-container');
-        const log = document.createElement('div');
-        log.className = 'intel-log';
-        log.innerHTML = `<span class="intel-time">${new Date().toLocaleTimeString()}</span><span class="intel-tag">[TRACKING]</span> Monitoring Token: ${token.substring(0,12)}...`;
-        stream.prepend(log);
+    function logShadow(msg) {
+        const feed = document.getElementById('shadow-log');
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        const d = new Date();
+        line.innerHTML = `<span class="log-time">${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}</span> ${msg}`;
+        feed.prepend(line);
+        updateStats('int');
+        if(feed.children.length > 30) feed.lastChild.remove();
     }
 
-    function startIntelSim() {
-        const stream = document.getElementById('live-stream-container');
-        const msgs = ["Inbound traffic detected...", "Connection established with remote bot.", "Payload successfully executed.", "Data exfiltration in progress...", "Heartbeat signal received from target."];
-        setInterval(() => {
-            if(document.getElementById('win-intel').classList.contains('active')) {
-                const log = document.createElement('div');
-                log.className = 'intel-log';
-                log.innerHTML = `<span class="intel-time">${new Date().toLocaleTimeString()}</span><span class="intel-tag">[LIVE]</span> ${msgs[Math.floor(Math.random()*msgs.length)]}`;
-                stream.prepend(log);
-                if(stream.children.length > 15) stream.lastChild.remove();
-            }
-        }, 4000);
-    }
-
-    // 5. System Utilities & Security
-    function sanitize(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-
-    function addChat(text, type) {
-        const stream = document.getElementById('chat-stream');
-        const div = document.createElement('div');
-        div.className = `bubble ${type}`;
-        let label = type === 'usr' ? 'OPERATOR' : 'TITAN_X';
-        let safe = sanitize(text);
-        let formatted = safe.replace(/```(.*?)```/gs, '<pre>$1</pre>').replace(/\n/g, '<br>');
-        div.innerHTML = `<b>[${label}]</b> ${formatted}`;
-        stream.appendChild(div);
-        stream.parentElement.scrollTop = stream.scrollHeight;
-    }
-
-    function initArsenal() {
-        const grid = document.getElementById('tools-grid');
-        const tools = [
-            { icon: "💉", name: "SQLi Payloads", data: "' OR 1=1 --\nadmin' #" },
-            { icon: "🕷️", name: "XSS Vectors", data: "<script>alert(1)<\/script>" },
-            { icon: "🔍", name: "Google Dorks", data: "inurl:admin/login.php" },
-            { icon: "🗑️", name: "Clear Logs", action: "clear" }
+    function simulateShadowTraffic() {
+        const evts = [
+            "Intercepted Webhook Payload: 48 bytes.",
+            "Attacker IP logged: 185.112.x.x (RU)",
+            "Honeypot Triggered: Fake Discord Token accessed.",
+            "Analyzing victim database dump...",
+            "Forensic Trace: Attacker using Python Requests."
         ];
-        tools.forEach(t => {
-            const card = document.createElement('div');
-            card.className = 'card-tool';
-            card.innerHTML = `<div class="tool-icon">${t.icon}</div><div class="tool-name">${t.name}</div>`;
-            card.onclick = () => {
-                if(t.action === 'clear') document.getElementById('chat-stream').innerHTML = "";
-                else {
-                    tab('win-core', document.querySelectorAll('.nav-item')[0]);
-                    addChat(`استدعاء أداة ${t.name}:\n${t.data}`, 'sys');
-                }
-            };
-            grid.appendChild(card);
-        });
+        setInterval(() => {
+            if(Math.random() > 0.4) logShadow(evts[Math.floor(Math.random() * evts.length)]);
+        }, 5000);
     }
 
-    function tab(id, el) {
-        document.querySelectorAll('.win').forEach(w => w.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+    // --- 6. LEVIATHAN AI CORE ---
+    function sendAI() {
+        const q = document.getElementById('ai-input').value;
+        if(!q) return;
+        addAiChat(q, 'usr');
+        document.getElementById('ai-input').value = "";
+        fetchAI(q);
     }
 
-    function setStatus(m) { document.getElementById('status-msg').innerText = `> ${m}`; }
-
-    function saveConfig() {
-        KEYS.gemini = document.getElementById('key-gem').value.trim();
-        KEYS.github = document.getElementById('key-gh').value.trim();
-        KEYS.gpt = document.getElementById('key-gpt').value.trim();
-        localStorage.setItem('titan_v250_keys', JSON.stringify(KEYS));
-        alert("تم تشفير وحفظ المفاتيح بنجاح.");
+    function profileHacker(repo) {
+        const q = `As a Cyber Intelligence Analyst, give a brief behavioral profile of an attacker who leaks tokens in a public repository named '${repo}'. Include possible skill level and mitigation steps.`;
+        addAiChat(`[SYSTEM DIRECTIVE] Profile Repo: ${repo}`, 'usr');
+        fetchAI(q);
     }
 
-    function loadConfig() {
-        const data = localStorage.getItem('titan_v250_keys');
-        if(data) {
-            KEYS = JSON.parse(data);
-            document.getElementById('key-gem').value = KEYS.gemini;
-            document.getElementById('key-gh').value = KEYS.github;
-            document.getElementById('key-gpt').value = KEYS.gpt;
+    async function fetchAI(prompt) {
+        if(!CONFIG.gem) { addAiChat("Error: Gemini Core offline. Missing Keys.", 'sys'); return; }
+        try {
+            const api = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CONFIG.gem}`;
+            const res = await fetch(`https://corsproxy.io/?` + encodeURIComponent(api), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const d = await res.json();
+            addAiChat(d.candidates[0].content.parts[0].text, 'sys');
+        } catch(e) { addAiChat("Connection to Neural Core failed.", 'sys'); }
+    }
+
+    function addAiChat(txt, type) {
+        const b = document.getElementById('ai-chat');
+        const m = document.createElement('div');
+        m.className = `msg ${type}`;
+        m.innerHTML = `<b>${type==='usr'?'OPERATOR':'LEVIATHAN_AI'}</b> ${txt.replace(/\n/g, '<br>')}`;
+        b.appendChild(m);
+        b.scrollTop = b.scrollHeight;
+    }
+
+    // --- 7. AUTO-DECRYPTION LAB ---
+    function crackHash() {
+        const inp = document.getElementById('hash-input').value.trim();
+        const out = document.getElementById('hash-output');
+        if(!inp) return;
+        
+        // Simulating decoding logic (Base64 check)
+        try {
+            const decoded = atob(inp);
+            out.innerHTML = `[SUCCESS] Base64 Decoded: <br><span style="color:#fff">${decoded}</span>`;
+            logShadow(`Decryption Lab decoded payload.`);
+        } catch(e) {
+            // Simulate MD5/SHA cracking delay
+            out.innerHTML = "[!] Identifying Hash... Attempting Rainbow Table lookup...";
+            setTimeout(() => {
+                out.innerHTML = `[FAILED] Hash ${inp.substring(0,10)}... requires cloud compute grid.`;
+            }, 1500);
         }
     }
 
-    function startDaemons() {
-        setInterval(() => document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString(), 1000);
-        setInterval(() => {
-            document.getElementById('mem-usage').innerText = `MEM: ${Math.floor(Math.random()*10+30)}%`;
-        }, 3000);
-        startIntelSim();
+    // --- 8. KILL SWITCH PROTOCOL ---
+    function openKillSwitch(type, token, repo) {
+        const modal = document.getElementById('modal-overlay');
+        const tpl = document.getElementById('abuse-template');
+        
+        const txt = `URGENT ABUSE REPORT
+----------------------
+Type: Compromised API Key / Bot Token
+Asset Class: ${type}
+Leaked Value: ${token}
+Source: GitHub Repository (${repo})
+
+To the Security Team:
+This token has been publicly exposed and is actively being used for malicious operations. In accordance with zero-trust protocols, please REVOKE this token immediately and suspend associated infrastructure.
+
+Automated by TITAN_OS v500 SOC.`;
+        
+        tpl.value = txt;
+        modal.style.display = 'flex';
     }
 
-    window.onload = runBoot;
+    function executeTakedown() {
+        // In a real scenario, this would send an email or API call to abuse@domain.com
+        updateStats('atk');
+        logShadow(`[KILL_SWITCH] Abuse report dispatched for targeted node.`);
+        document.getElementById('modal-overlay').style.display = 'none';
+        alert("TAKEDOWN DIRECTIVE SENT TO AUTHORITIES.");
+    }
+
+    // --- UTILS ---
+    function startDaemons() {
+        setInterval(() => {
+            document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString();
+            document.getElementById('mem-val').innerText = Math.floor(Math.random() * 20 + 10) + "%";
+        }, 1000);
+        simulateShadowTraffic();
+    }
+
+    window.onload = startBoot;
+
 </script>
 </body>
 </html>
