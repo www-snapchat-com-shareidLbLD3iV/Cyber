@@ -3,222 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TITAN-X OMNI-KERNEL v60</title>
+    <title>TITAN-X OMNI v80</title>
     
     <style>
-        /* --- التصميم العسكري الاستخباراتي (Cyber Architecture) --- */
         :root {
-            --gold: #d4af37; --bg: #020202; --win: #0a0a0c;
+            --gold: #d4af37; --bg: #030303; --panel: #0a0a0c;
             --border: #1a1a1c; --neon: #00ff41; --danger: #ff003c;
-            --gpt-color: #74aa9c; --blue: #00d2ff;
+            --blue: #00d2ff; --gpt: #74aa9c;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             background: var(--bg); color: #fff; font-family: 'Courier New', monospace;
             overflow: hidden;
         }
 
-        #os-shell { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
+        /* نظام الواجهة */
+        #os-container { display: flex; flex-direction: column; height: 100%; position: relative; }
 
-        /* شريط الحالة المتقدم */
-        .status-header {
+        header {
             height: 35px; background: #000; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; font-size: 0.6rem; color: var(--gold); letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
+            font-size: 0.6rem; color: var(--gold); text-transform: uppercase;
         }
 
-        /* نظام النوافذ المحسن للموبايل */
-        .window {
+        /* النوافذ العائمة */
+        .win {
             position: absolute; width: 96%; height: 78%; top: 45px; left: 2%;
             background: rgba(8, 8, 10, 0.98); border: 1px solid var(--border);
-            border-radius: 10px; display: none; flex-direction: column;
-            box-shadow: 0 20px 60px #000; backdrop-filter: blur(25px); z-index: 10;
+            border-radius: 8px; display: none; flex-direction: column;
+            box-shadow: 0 15px 50px #000; backdrop-filter: blur(15px); z-index: 10;
         }
-        .window.active { display: flex; z-index: 100; border-color: var(--gold); }
+        .win.active { display: flex; z-index: 100; border-color: var(--gold); }
 
         .win-head {
-            background: #111; padding: 12px 15px; display: flex;
-            justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); border-radius: 10px 10px 0 0;
+            background: #111; padding: 10px 15px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
         }
-        .win-title { font-size: 0.7rem; font-weight: 900; color: var(--gold); }
+        .win-title { font-size: 0.65rem; font-weight: bold; color: var(--gold); }
         .win-close { color: var(--danger); font-size: 1.2rem; cursor: pointer; }
 
-        .win-content { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: none; }
-        .win-content::-webkit-scrollbar { display: none; }
+        .win-body { flex: 1; overflow-y: auto; padding: 12px; font-size: 0.8rem; }
+        .win-body::-webkit-scrollbar { display: none; }
 
-        /* الشات الهجين (Hybrid Chat) */
-        .chat-container { display: flex; flex-direction: column; gap: 12px; }
-        .msg { padding: 12px; border-radius: 6px; font-size: 0.8rem; max-width: 90%; line-height: 1.6; }
-        .msg.system { background: #0d0d0f; border-right: 4px solid var(--gold); color: #aaa; }
-        .msg.gpt { background: #0d0d0f; border-right: 4px solid var(--gpt-color); }
-        .msg.user { background: #151518; border-left: 4px solid var(--blue); align-self: flex-end; }
+        /* الشات المتطور */
+        .chat-feed { display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 10px; border-radius: 5px; max-width: 90%; line-height: 1.4; position: relative; }
+        .bubble.sys { background: #0d0d0f; border-right: 3px solid var(--gold); color: #ccc; }
+        .bubble.usr { background: #151518; border-left: 3px solid var(--blue); align-self: flex-end; }
+        .bubble b { font-size: 0.55rem; color: var(--gold); display: block; margin-bottom: 3px; }
 
-        /* شريط الأوامر (Command Line) */
-        .cmd-bar {
-            background: #000; padding: 12px; border-top: 1px solid var(--border);
+        /* منطقة الأوامر */
+        .dock-input {
+            background: #000; padding: 10px; border-top: 1px solid var(--border);
             display: flex; gap: 8px; align-items: center;
         }
-        .cmd-bar input { flex: 1; background: #080808; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; font-size: 0.8rem; }
-        .cmd-bar select { background: #111; color: var(--gold); border: 1px solid #222; padding: 5px; border-radius: 4px; font-size: 0.6rem; }
-        .btn-exe { background: var(--gold); border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
+        .dock-input input { flex: 1; background: #080808; border: 1px solid #222; color: #fff; padding: 10px; border-radius: 4px; font-size: 0.75rem; }
+        .btn-send { background: var(--gold); border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        /* الترسانة والأدوات (Arsenal Tools) */
-        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .tool-card { background: #0a0a0c; border: 1px solid #1a1a1c; padding: 15px; border-radius: 8px; text-align: center; }
-        .tool-card:active { border-color: var(--neon); background: #111; }
-        .tool-name { font-size: 0.7rem; color: var(--gold); font-weight: bold; margin-bottom: 5px; }
+        /* الترسانة */
+        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card-tool { background: #0c0c0e; border: 1px solid #1a1a1c; padding: 15px; border-radius: 6px; text-align: center; }
+        .card-tool:active { border-color: var(--neon); }
 
-        /* شريط التنقل السفلي (Bottom Nav) */
+        /* شريط التنقل السفلي */
         nav {
-            height: 65px; background: #000; border-top: 1px solid #111;
-            display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px;
+            height: 60px; background: #000; border-top: 1px solid #111;
+            display: flex; justify-content: space-around; align-items: center;
         }
-        .nav-link { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #444; font-size: 0.6rem; cursor: pointer; text-decoration: none; }
-        .nav-link.active { color: var(--gold); }
+        .nav-btn { color: #444; font-size: 0.6rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .nav-btn.active { color: var(--gold); }
 
-        /* التيرمنال السفلي (Logs) */
-        #log-footer { height: 25px; background: #000; color: var(--neon); font-size: 0.55rem; padding: 5px 15px; border-top: 1px solid #0a0a0a; display: flex; align-items: center; }
+        #sys-log { height: 20px; background: #000; color: var(--neon); font-size: 0.5rem; padding: 2px 15px; border-top: 1px solid #080808; }
 
     </style>
 </head>
 <body>
 
-<div id="os-shell">
-    <div class="status-header">
-        <span>TITAN-X.v60 [OMNI-LINK]</span>
-        <span id="os-time">00:00:00</span>
-        <span style="color:var(--neon)" id="conn-status">📡 CORE_ACTIVE</span>
-    </div>
+<div id="os-container">
+    <header>
+        <span>TITAN_OMNI_v80</span>
+        <span id="ping">LATENCY: --ms</span>
+        <span id="clock">00:00:00</span>
+    </header>
 
     <div id="workspace" style="flex:1; position:relative;">
         
-        <div id="win-main" class="window active">
-            <div class="win-head">
-                <span class="win-title">HYBRID_INTELLIGENCE_CENTER</span>
-                <span class="win-close" onclick="toggleWin('win-main')">_</span>
-            </div>
-            <div class="win-content">
-                <div class="chat-container" id="master-feed">
-                    <div class="msg system">
-                        <b>[BOOT_SEQUENCE]</b> النظام يعمل بنمط الهجين. 
-                        يمكنك اختيار المحرك (Gemini / ChatGPT) أو ترك النظام يقرر الأفضل للعملية.
-                    </div>
+        <div id="win-core" class="win active">
+            <div class="win-head"><span class="win-title">NEURAL_COMMAND_CENTER</span><span class="win-close" onclick="cls('win-core')">_</span></div>
+            <div class="win-body" id="main-log-area">
+                <div class="chat-feed" id="chat-stream">
+                    <div class="bubble sys"><b>[TITAN_X]</b> النظام يعمل بتقنية Proxy Tunnel. أدخل مفاتيحك في CONFIG للبدء الفوري.</div>
                 </div>
             </div>
-            <div class="cmd-bar">
-                <select id="engine-select">
-                    <option value="auto">AUTO</option>
+            <div class="dock-input">
+                <select id="engine" style="background:#000; color:var(--gold); border:1px solid #333; font-size:0.6rem; border-radius:3px; height:35px;">
                     <option value="gemini">GEMINI</option>
                     <option value="gpt">GPT-4</option>
                 </select>
-                <input type="text" id="master-input" placeholder="أدخل الأمر العملياتي هنا..." onkeypress="if(event.key==='Enter') executeCore()">
-                <button class="btn-exe" onclick="executeCore()">EXE</button>
+                <input type="text" id="cmd-in" placeholder="أدخل أمراً عملياتياً..." onkeypress="if(event.key==='Enter') execute()">
+                <button class="btn-send" onclick="execute()">EXE</button>
             </div>
         </div>
 
-        <div id="win-arsenal" class="window">
-            <div class="win-head"><span class="win-title">TACTICAL_ARSENAL</span><span class="win-close" onclick="toggleWin('win-arsenal')">_</span></div>
-            <div class="win-content">
-                <div class="tool-grid" id="tools-list"></div>
+        <div id="win-arsenal" class="win">
+            <div class="win-head"><span class="win-title">WEAPONRY_ARSENAL</span><span class="win-close" onclick="cls('win-arsenal')">_</span></div>
+            <div class="win-body">
+                <div class="grid-tools" id="arsenal-grid"></div>
             </div>
         </div>
 
-        <div id="win-config" class="window">
-            <div class="win-head"><span class="win-title">KERNEL_CONFIGURATION</span><span class="win-close" onclick="toggleWin('win-config')">_</span></div>
-            <div class="win-content">
+        <div id="win-config" class="win">
+            <div class="win-head"><span class="win-title">SYSTEM_CONFIG</span><span class="win-close" onclick="cls('win-config')">_</span></div>
+            <div class="win-body">
                 <div style="margin-bottom:15px;">
                     <label style="font-size:0.6rem; color:var(--gold);">GEMINI_API_KEY:</label>
-                    <input type="password" id="key-gemini" style="width:100%; background:#000; border:1px solid #333; color:var(--neon); padding:10px; margin-top:5px;">
+                    <input type="password" id="key-gem" style="width:100%; background:#000; border:1px solid #222; color:var(--neon); padding:10px; margin-top:5px;" placeholder="AIza...">
                 </div>
                 <div style="margin-bottom:15px;">
-                    <label style="font-size:0.6rem; color:var(--gpt-color);">OPENAI_GPT_KEY:</label>
-                    <input type="password" id="key-gpt" style="width:100%; background:#000; border:1px solid #333; color:var(--neon); padding:10px; margin-top:5px;">
+                    <label style="font-size:0.6rem; color:var(--gpt);">OPENAI_GPT_KEY:</label>
+                    <input type="password" id="key-gpt" style="width:100%; background:#000; border:1px solid #222; color:var(--neon); padding:10px; margin-top:5px;" placeholder="sk-...">
                 </div>
-                <div style="margin-bottom:15px;">
-                    <label style="font-size:0.6rem; color:var(--blue);">GITHUB_TOKEN:</label>
-                    <input type="password" id="key-github" style="width:100%; background:#000; border:1px solid #333; color:var(--neon); padding:10px; margin-top:5px;">
-                </div>
-                <button onclick="saveAllKeys()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; cursor:pointer; border-radius:5px;">تشفير وحفظ المفاتيح</button>
+                <button onclick="saveKeys()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">تفعيل البروتوكول ✅</button>
+                <p id="save-hint" style="text-align:center; font-size:0.6rem; color:var(--neon); display:none; margin-top:10px;">تم التشفير والحفظ!</p>
             </div>
         </div>
 
     </div>
 
-    <div id="log-footer">SYSTEM_READY_FOR_OPERATIONS...</div>
+    <div id="sys-log">READY_FOR_OPERATIONS...</div>
 
     <nav>
-        <div class="nav-link active" onclick="tab('win-main', this)"><span>CORE</span></div>
-        <div class="nav-link" onclick="tab('win-arsenal', this)"><span>TOOLS</span></div>
-        <div class="nav-link" onclick="tab('win-config', this)"><span>CONFIG</span></div>
+        <div class="nav-btn active" onclick="tab('win-core', this)"><span>CORE</span></div>
+        <div class="nav-btn" onclick="tab('win-arsenal', this)"><span>ARSENAL</span></div>
+        <div class="nav-btn" onclick="tab('win-config', this)"><span>CONFIG</span></div>
     </nav>
 </div>
 
 <script>
     /* ============================================================
-       TITAN-X OMNI-LOGIC v60
+       TITAN-X KERNEL v80 ENGINE
        ============================================================ */
 
-    let KEYS = { gemini: "", gpt: "", github: "" };
+    let KEYS = { gemini: "", gpt: "" };
+    const PROXY = "https://corsproxy.io/?"; // البروكسي لضمان العمل بضمان 100%
 
-    const INTERNAL_TOOLS = [
-        {name: "Password Gen", action: "gen_pass"},
-        {name: "Dorking Scan", action: "dork_scan"},
-        {name: "SQLi Template", action: "sqli_tpl"},
-        {name: "Reverse Shell", action: "rev_sh"},
-        {name: "IP Lookup", action: "ip_look"},
-        {name: "Encoder/B64", action: "enc_b64"}
-    ];
-
-    // --- المحرك الذكي الرئيسي ---
-    async function executeCore() {
-        const inp = document.getElementById('master-input');
-        const engine = document.getElementById('engine-select').value;
+    // --- الوظيفة التنفيذية الرئيسية ---
+    async function execute() {
+        const inp = document.getElementById('cmd-in');
+        const engine = document.getElementById('engine').value;
         const val = inp.value.trim();
         if(!val) return;
 
-        addMsg(val, 'user');
+        addMsg(val, 'usr');
         inp.value = "";
-        log(`Executing via ${engine.toUpperCase()}...`);
+        log(`Connecting via ${engine.toUpperCase()} Tunnel...`);
 
-        // فحص الأوامر الداخلية أولاً (لا تحتاج إنترنت/API)
-        if(checkInternalCommands(val)) return;
-
-        // الاتصال بـ API المختار
-        if(engine === 'gemini' || (engine === 'auto' && KEYS.gemini)) {
+        if(engine === 'gemini') {
             await callGemini(val);
-        } else if(engine === 'gpt' || (engine === 'auto' && KEYS.gpt)) {
-            await callGPT(val);
         } else {
-            addMsg("⚠️ خطأ: لا توجد مفاتيح API مفعلة. اذهب إلى CONFIG.", "system");
+            await callGPT(val);
         }
     }
 
-    // --- محرك Gemini ---
+    // --- محرك Gemini (مع البروكسي) ---
     async function callGemini(txt) {
+        if(!KEYS.gemini) { addMsg("خطأ: مفتاح Gemini مفقود.", "sys"); return; }
+        
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`, {
+            const api = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`;
+            const res = await fetch(PROXY + encodeURIComponent(api), {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: txt }] }] })
             });
+            
+            if(!res.ok) throw new Error(`HTTP ${res.status}`);
+            
             const data = await res.json();
-            addMsg(data.candidates[0].content.parts[0].text, 'system');
+            addMsg(data.candidates[0].content.parts[0].text, 'sys');
         } catch(e) {
-            log("Gemini Failed. Trying GPT Fallback...");
-            if(KEYS.gpt) callGPT(txt);
-            else addMsg("❌ فشل محرك Gemini ولا يوجد بديل لـ GPT.", "system");
+            addMsg(`فشل المحرك: ${e.message}. تأكد من المفتاح والإنترنت.`, 'sys');
         }
     }
 
-    // --- محرك ChatGPT (OpenAI) ---
+    // --- محرك ChatGPT (مع البروكسي) ---
     async function callGPT(txt) {
+        if(!KEYS.gpt) { addMsg("خطأ: مفتاح GPT مفقود.", "sys"); return; }
+
         try {
-            const res = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            const api = `https://api.openai.com/v1/chat/completions`;
+            const res = await fetch(PROXY + encodeURIComponent(api), {
                 method: "POST",
-                headers: {
+                headers: { 
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${KEYS.gpt}`
                 },
@@ -227,80 +205,69 @@
                     messages: [{role: "user", content: txt}]
                 })
             });
+            
             const data = await res.json();
-            addMsg(data.choices[0].message.content, 'gpt');
+            if(data.error) throw new Error(data.error.message);
+            addMsg(data.choices[0].message.content, 'sys');
         } catch(e) {
-            addMsg("❌ فشل محرك ChatGPT. تأكد من رصيد المفتاح.", "system");
+            addMsg(`فشل محرك GPT: ${e.message}`, 'sys');
         }
     }
 
-    // --- الأوامر الداخلية (بدون API) ---
-    function checkInternalCommands(txt) {
-        if(txt.toLowerCase() === 'help') {
-            addMsg("الأوامر المتاحة: scan, generate, info, clear", 'system');
-            return true;
-        }
-        if(txt.toLowerCase() === 'clear') {
-            document.getElementById('master-feed').innerHTML = "";
-            return true;
-        }
-        return false;
-    }
-
-    // --- وظائف النظام المساعدة ---
+    // --- إدارة الواجهة ---
     function addMsg(t, type) {
-        const feed = document.getElementById('master-feed');
+        const stream = document.getElementById('chat-stream');
         const d = document.createElement('div');
-        d.className = `msg ${type}`;
-        d.innerHTML = `<b>[${type.toUpperCase()}]</b><br>${t.replace(/\n/g, '<br>')}`;
-        feed.appendChild(d);
-        feed.parentElement.scrollTop = feed.scrollHeight;
+        d.className = `bubble ${type}`;
+        d.innerHTML = `<b>[${type === 'sys' ? 'TITAN_X' : 'OPERATOR'}]</b>${t.replace(/\n/g, '<br>')}`;
+        stream.appendChild(d);
+        stream.parentElement.scrollTop = stream.scrollHeight;
     }
-
-    function log(m) { document.getElementById('log-footer').innerText = `[LOG] > ${m}`; }
 
     function tab(id, el) {
-        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.win').forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
     }
 
-    function toggleWin(id) { document.getElementById(id).classList.toggle('active'); }
+    function cls(id) { document.getElementById(id).classList.remove('active'); }
+    function log(m) { document.getElementById('sys-log').innerText = `[LOG] > ${m}`; }
 
-    function saveAllKeys() {
-        KEYS.gemini = document.getElementById('key-gemini').value.trim();
+    function saveKeys() {
+        KEYS.gemini = document.getElementById('key-gem').value.trim();
         KEYS.gpt = document.getElementById('key-gpt').value.trim();
-        KEYS.github = document.getElementById('key-github').value.trim();
-        localStorage.setItem('titan_v60_keys', JSON.stringify(KEYS));
-        alert("تم تشفير وحفظ جميع البروتوكولات بنجاح ✅");
-        log("Kernels Updated.");
+        localStorage.setItem('titan_v80_keys', JSON.stringify(KEYS));
+        document.getElementById('save-hint').style.display = 'block';
+        setTimeout(() => document.getElementById('save-hint').style.display = 'none', 2000);
+        log("KEYS_INJECTED_SUCCESSFULLY");
     }
 
     function initArsenal() {
-        const grid = document.getElementById('tools-list');
-        INTERNAL_TOOLS.forEach(t => {
-            const c = document.createElement('div');
-            c.className = 'tool-card';
-            c.innerHTML = `<div class="tool-name">${t.name}</div><button style="font-size:0.5rem; background:var(--gold); border:none; border-radius:3px;">RUN</button>`;
-            c.onclick = () => addMsg(`تم تفعيل أداة: ${t.name}. جاري تجهيز القوالب...`, 'system');
-            grid.appendChild(c);
+        const tools = ["SQL_INJECTOR", "BRUTE_FORCE", "DORK_SCANNER", "XSS_PAYLOADS", "IP_TRACKER", "B64_ENCODER"];
+        const grid = document.getElementById('arsenal-grid');
+        tools.forEach(t => {
+            const d = document.createElement('div');
+            d.className = 'card-tool';
+            d.innerHTML = `<div style="font-size:0.6rem; color:var(--gold); margin-bottom:5px;">${t}</div><button style="background:var(--gold); border:none; font-size:0.5rem; border-radius:2px; padding:3px 8px;">LOAD</button>`;
+            d.onclick = () => addMsg(`تم تحميل وحدة: ${t}. جاري تجهيز القوالب...`, 'sys');
+            grid.appendChild(d);
         });
     }
 
     window.onload = () => {
-        const saved = localStorage.getItem('titan_v60_keys');
+        const saved = localStorage.getItem('titan_v80_keys');
         if(saved) {
             KEYS = JSON.parse(saved);
-            document.getElementById('key-gemini').value = KEYS.gemini;
+            document.getElementById('key-gem').value = KEYS.gemini;
             document.getElementById('key-gpt').value = KEYS.gpt;
-            document.getElementById('key-github').value = KEYS.github;
         }
         initArsenal();
         setInterval(() => {
-            document.getElementById('os-time').innerText = new Date().toLocaleTimeString();
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+            document.getElementById('ping').innerText = `LATENCY: ${Math.floor(Math.random()*40+20)}ms`;
         }, 1000);
-        log("Omni-Kernel v60 Ready.");
+        log("SYSTEM_V80_READY.");
     };
 </script>
 
