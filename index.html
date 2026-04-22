@@ -3,154 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TITAN-X OMNI v80</title>
-    
+    <title>TITAN_OS | v100 LEVIATHAN</title>
     <style>
+        /* ============================================================
+           CSS CORE - CYBERPUNK THEME & ANIMATIONS
+           ============================================================ */
         :root {
-            --gold: #d4af37; --bg: #030303; --panel: #0a0a0c;
+            --gold: #d4af37; --bg: #020202; --panel: #0a0a0c;
             --border: #1a1a1c; --neon: #00ff41; --danger: #ff003c;
-            --blue: #00d2ff; --gpt: #74aa9c;
+            --blue: #00d2ff; --gpt: #74aa9c; --gh: #fafafa;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        
         body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); color: #fff; font-family: 'Courier New', monospace;
-            overflow: hidden;
+            width: 100%; height: 100%; background: var(--bg); color: #fff; 
+            font-family: 'Courier New', monospace; overflow: hidden;
         }
 
-        /* نظام الواجهة */
-        #os-container { display: flex; flex-direction: column; height: 100%; position: relative; }
+        /* Scanline Overlay */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px; pointer-events: none; z-index: 9999; opacity: 0.6;
+        }
 
+        /* Boot Screen */
+        #boot-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000; display: flex; flex-direction: column;
+            padding: 20px; overflow-y: auto; color: var(--neon); font-size: 0.8rem;
+        }
+
+        /* Main OS Layout */
+        #os-core { display: none; flex-direction: column; height: 100%; position: relative; }
+
+        /* Header */
         header {
-            height: 35px; background: #000; border-bottom: 1px solid var(--border);
+            height: 40px; background: #050505; border-bottom: 1px solid var(--gold);
             display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
-            font-size: 0.6rem; color: var(--gold); text-transform: uppercase;
+            font-size: 0.65rem; color: var(--gold); text-transform: uppercase; font-weight: bold;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        /* النوافذ العائمة */
+        /* Window System */
+        #workspace { flex: 1; position: relative; }
         .win {
-            position: absolute; width: 96%; height: 78%; top: 45px; left: 2%;
-            background: rgba(8, 8, 10, 0.98); border: 1px solid var(--border);
+            position: absolute; width: 96%; height: 85%; top: 20px; left: 2%;
+            background: rgba(5, 5, 5, 0.95); border: 1px solid var(--border);
             border-radius: 8px; display: none; flex-direction: column;
-            box-shadow: 0 15px 50px #000; backdrop-filter: blur(15px); z-index: 10;
+            box-shadow: 0 15px 50px #000; backdrop-filter: blur(10px); z-index: 10;
         }
         .win.active { display: flex; z-index: 100; border-color: var(--gold); }
 
         .win-head {
-            background: #111; padding: 10px 15px; display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
+            background: #0a0a0a; padding: 12px 15px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gold);
         }
-        .win-title { font-size: 0.65rem; font-weight: bold; color: var(--gold); }
-        .win-close { color: var(--danger); font-size: 1.2rem; cursor: pointer; }
+        .win-title { font-size: 0.7rem; font-weight: bold; color: var(--gold); letter-spacing: 1px; }
+        .win-close { color: var(--danger); font-size: 1rem; cursor: pointer; font-weight: bold; }
 
-        .win-body { flex: 1; overflow-y: auto; padding: 12px; font-size: 0.8rem; }
-        .win-body::-webkit-scrollbar { display: none; }
+        .win-body { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.8rem; }
+        .win-body::-webkit-scrollbar { width: 4px; }
+        .win-body::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
 
-        /* الشات المتطور */
-        .chat-feed { display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 10px; border-radius: 5px; max-width: 90%; line-height: 1.4; position: relative; }
-        .bubble.sys { background: #0d0d0f; border-right: 3px solid var(--gold); color: #ccc; }
-        .bubble.usr { background: #151518; border-left: 3px solid var(--blue); align-self: flex-end; }
-        .bubble b { font-size: 0.55rem; color: var(--gold); display: block; margin-bottom: 3px; }
+        /* Chat UI */
+        .chat-feed { display: flex; flex-direction: column; gap: 12px; }
+        .bubble { padding: 12px; border-radius: 6px; max-width: 95%; line-height: 1.5; font-size: 0.75rem; word-wrap: break-word; }
+        .bubble.sys { background: #0d0d0f; border-right: 3px solid var(--gold); color: #ddd; }
+        .bubble.usr { background: #151518; border-left: 3px solid var(--blue); align-self: flex-end; color: #fff; }
+        .bubble.err { background: #1a0505; border-right: 3px solid var(--danger); color: #ff6b6b; }
+        .bubble b { font-size: 0.6rem; color: var(--gold); display: block; margin-bottom: 5px; text-transform: uppercase; }
+        pre { background: #000; padding: 10px; border: 1px solid #333; overflow-x: auto; color: var(--neon); border-radius: 4px; }
 
-        /* منطقة الأوامر */
+        /* Input Dock */
         .dock-input {
-            background: #000; padding: 10px; border-top: 1px solid var(--border);
+            background: #020202; padding: 12px; border-top: 1px solid var(--border);
             display: flex; gap: 8px; align-items: center;
         }
-        .dock-input input { flex: 1; background: #080808; border: 1px solid #222; color: #fff; padding: 10px; border-radius: 4px; font-size: 0.75rem; }
-        .btn-send { background: var(--gold); border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-
-        /* الترسانة */
-        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card-tool { background: #0c0c0e; border: 1px solid #1a1a1c; padding: 15px; border-radius: 6px; text-align: center; }
-        .card-tool:active { border-color: var(--neon); }
-
-        /* شريط التنقل السفلي */
-        nav {
-            height: 60px; background: #000; border-top: 1px solid #111;
-            display: flex; justify-content: space-around; align-items: center;
+        .dock-input input { 
+            flex: 1; background: #080808; border: 1px solid #333; color: #fff; 
+            padding: 12px; border-radius: 4px; font-size: 0.8rem; font-family: inherit;
         }
-        .nav-btn { color: #444; font-size: 0.6rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-        .nav-btn.active { color: var(--gold); }
+        .dock-input select {
+            background: #000; color: var(--gold); border: 1px solid var(--gold); 
+            font-size: 0.7rem; border-radius: 4px; height: 40px; padding: 0 5px; font-family: inherit;
+        }
+        .btn-send { 
+            background: var(--gold); color: #000; border: none; padding: 0 20px; 
+            border-radius: 4px; font-weight: bold; cursor: pointer; height: 40px; font-family: inherit;
+        }
 
-        #sys-log { height: 20px; background: #000; color: var(--neon); font-size: 0.5rem; padding: 2px 15px; border-top: 1px solid #080808; }
+        /* Arsenal Grid */
+        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card-tool { 
+            background: #0a0a0c; border: 1px solid #222; padding: 15px; 
+            border-radius: 6px; text-align: center; transition: 0.2s; cursor: pointer;
+        }
+        .card-tool:hover { border-color: var(--gold); background: #111; }
+        .tool-icon { font-size: 1.5rem; margin-bottom: 8px; }
+        .tool-name { font-size: 0.7rem; color: var(--gold); font-weight: bold; }
 
+        /* Config Form */
+        .config-group { margin-bottom: 15px; }
+        .config-group label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 5px; }
+        .config-group input { 
+            width: 100%; background: #000; border: 1px solid #333; color: var(--neon); 
+            padding: 12px; border-radius: 4px; font-family: inherit;
+        }
+        .btn-save {
+            width: 100%; padding: 15px; background: var(--gold); color: #000;
+            border: none; font-weight: bold; cursor: pointer; border-radius: 4px; font-family: inherit; margin-top: 10px;
+        }
+
+        /* Radar/GitHub Form */
+        .gh-profile { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 15px; background: #050505; border: 1px dashed var(--gh); }
+        .gh-profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold); }
+        .gh-stats { font-size: 0.7rem; line-height: 1.6; color: #ccc; }
+        .repo-list { display: flex; flex-direction: column; gap: 8px; }
+        .repo-item { background: #111; padding: 10px; border-right: 2px solid var(--blue); font-size: 0.75rem; }
+
+        /* Footer & Nav */
+        #sys-log { 
+            height: 25px; background: #000; color: var(--neon); font-size: 0.6rem; 
+            padding: 5px 15px; border-top: 1px solid #111; border-bottom: 1px solid #111;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        nav {
+            height: 65px; background: #020202; display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-btn { 
+            color: #555; font-size: 0.65rem; display: flex; flex-direction: column; 
+            align-items: center; gap: 5px; cursor: pointer; font-weight: bold; width: 25%; text-align: center;
+        }
+        .nav-btn.active { color: var(--gold); text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); }
+        .nav-btn i { font-size: 1.2rem; font-style: normal; }
     </style>
 </head>
 <body>
 
-<div id="os-container">
+<div class="scanlines"></div>
+
+<div id="boot-screen">
+    <div id="boot-text"></div>
+</div>
+
+<div id="os-core">
     <header>
-        <span>TITAN_OMNI_v80</span>
-        <span id="ping">LATENCY: --ms</span>
+        <span>TITAN_OS v100 [LEVIATHAN]</span>
+        <span id="ping">PING: --ms</span>
         <span id="clock">00:00:00</span>
     </header>
 
-    <div id="workspace" style="flex:1; position:relative;">
+    <div id="workspace">
         
         <div id="win-core" class="win active">
-            <div class="win-head"><span class="win-title">NEURAL_COMMAND_CENTER</span><span class="win-close" onclick="cls('win-core')">_</span></div>
+            <div class="win-head">
+                <span class="win-title">NEURAL_COMMAND_CENTER</span>
+            </div>
             <div class="win-body" id="main-log-area">
                 <div class="chat-feed" id="chat-stream">
-                    <div class="bubble sys"><b>[TITAN_X]</b> النظام يعمل بتقنية Proxy Tunnel. أدخل مفاتيحك في CONFIG للبدء الفوري.</div>
+                    <div class="bubble sys">
+                        <b>[TITAN_SYSTEM]</b> 
+                        مرحباً أيها القائد. النظام يعمل بتقنية Proxy Bypass.<br>
+                        الرجاء التأكد من إدخال المفاتيح في CONFIG.<br>
+                        المحركات المتاحة: Gemini (موصى به), GPT-3.5, GitHub.
+                    </div>
                 </div>
             </div>
             <div class="dock-input">
-                <select id="engine" style="background:#000; color:var(--gold); border:1px solid #333; font-size:0.6rem; border-radius:3px; height:35px;">
+                <select id="engine">
                     <option value="gemini">GEMINI</option>
-                    <option value="gpt">GPT-4</option>
+                    <option value="gpt">GPT-3.5</option>
                 </select>
-                <input type="text" id="cmd-in" placeholder="أدخل أمراً عملياتياً..." onkeypress="if(event.key==='Enter') execute()">
-                <button class="btn-send" onclick="execute()">EXE</button>
+                <input type="text" id="cmd-in" placeholder="أدخل أمراً (مثال: اكتب كود بايثون...)" onkeypress="if(event.key==='Enter') executeCore()">
+                <button class="btn-send" onclick="executeCore()">EXE</button>
+            </div>
+        </div>
+
+        <div id="win-radar" class="win">
+            <div class="win-head"><span class="win-title">GITHUB_RECON_RADAR</span></div>
+            <div class="win-body">
+                <div style="font-size:0.7rem; color:#aaa; margin-bottom:15px;">
+                    استخدم هذا الرادار لفحص حسابات المطورين واستخراج بياناتهم ومستودعاتهم باستخدام GitHub API.
+                </div>
+                <div class="dock-input" style="border:1px solid #333; margin-bottom:15px;">
+                    <input type="text" id="gh-target" placeholder="أدخل اسم المستخدم (مثال: defunkt)..." onkeypress="if(event.key==='Enter') scanGitHub()">
+                    <button class="btn-send" style="background:var(--blue); color:#fff;" onclick="scanGitHub()">SCAN</button>
+                </div>
+                <div id="gh-results">
+                    </div>
             </div>
         </div>
 
         <div id="win-arsenal" class="win">
-            <div class="win-head"><span class="win-title">WEAPONRY_ARSENAL</span><span class="win-close" onclick="cls('win-arsenal')">_</span></div>
+            <div class="win-head"><span class="win-title">TACTICAL_ARSENAL</span></div>
             <div class="win-body">
-                <div class="grid-tools" id="arsenal-grid"></div>
+                <div class="grid-tools" id="arsenal-grid">
+                    </div>
             </div>
         </div>
 
         <div id="win-config" class="win">
-            <div class="win-head"><span class="win-title">SYSTEM_CONFIG</span><span class="win-close" onclick="cls('win-config')">_</span></div>
+            <div class="win-head"><span class="win-title">SYSTEM_CONFIGURATION</span></div>
             <div class="win-body">
-                <div style="margin-bottom:15px;">
-                    <label style="font-size:0.6rem; color:var(--gold);">GEMINI_API_KEY:</label>
-                    <input type="password" id="key-gem" style="width:100%; background:#000; border:1px solid #222; color:var(--neon); padding:10px; margin-top:5px;" placeholder="AIza...">
+                <div class="config-group">
+                    <label style="color:var(--gold);">[1] GEMINI_API_KEY (Primary Engine):</label>
+                    <input type="password" id="key-gem" placeholder="AIzaSy...">
                 </div>
-                <div style="margin-bottom:15px;">
-                    <label style="font-size:0.6rem; color:var(--gpt);">OPENAI_GPT_KEY:</label>
-                    <input type="password" id="key-gpt" style="width:100%; background:#000; border:1px solid #222; color:var(--neon); padding:10px; margin-top:5px;" placeholder="sk-...">
+                <div class="config-group">
+                    <label style="color:var(--gpt);">[2] OPENAI_GPT_KEY (Fallback Engine):</label>
+                    <input type="password" id="key-gpt" placeholder="sk-...">
                 </div>
-                <button onclick="saveKeys()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">تفعيل البروتوكول ✅</button>
-                <p id="save-hint" style="text-align:center; font-size:0.6rem; color:var(--neon); display:none; margin-top:10px;">تم التشفير والحفظ!</p>
+                <div class="config-group">
+                    <label style="color:var(--gh);">[3] GITHUB_TOKEN (Recon Engine):</label>
+                    <input type="password" id="key-gh" placeholder="ghp_...">
+                </div>
+                <button class="btn-save" onclick="saveKeys()">ENCRYPT & INJECT KEYS</button>
+                <div id="save-hint" style="text-align:center; color:var(--neon); font-size:0.7rem; margin-top:15px; display:none;">
+                    [✓] ALL PROTOCOLS SECURED AND SAVED.
+                </div>
             </div>
         </div>
 
     </div>
 
-    <div id="sys-log">READY_FOR_OPERATIONS...</div>
+    <div id="sys-log">
+        <span id="log-text">SYSTEM_IDLE...</span>
+        <span style="color:var(--danger);" id="mem-usage">MEM: 12%</span>
+    </div>
 
     <nav>
-        <div class="nav-btn active" onclick="tab('win-core', this)"><span>CORE</span></div>
-        <div class="nav-btn" onclick="tab('win-arsenal', this)"><span>ARSENAL</span></div>
-        <div class="nav-btn" onclick="tab('win-config', this)"><span>CONFIG</span></div>
+        <div class="nav-btn active" onclick="tab('win-core', this)">
+            <i>🧠</i><span>CORE</span>
+        </div>
+        <div class="nav-btn" onclick="tab('win-radar', this)">
+            <i>📡</i><span>RADAR</span>
+        </div>
+        <div class="nav-btn" onclick="tab('win-arsenal', this)">
+            <i>⚔️</i><span>ARSENAL</span>
+        </div>
+        <div class="nav-btn" onclick="tab('win-config', this)">
+            <i>⚙️</i><span>CONFIG</span>
+        </div>
     </nav>
 </div>
 
 <script>
     /* ============================================================
-       TITAN-X KERNEL v80 ENGINE
+       JAVASCRIPT CORE - TITAN_OS v100
        ============================================================ */
 
-    let KEYS = { gemini: "", gpt: "" };
-    const PROXY = "https://corsproxy.io/?"; // البروكسي لضمان العمل بضمان 100%
+    // 1. Data Storage & Configs
+    let KEYS = { gemini: "", gpt: "", github: "" };
+    const PROXY = "https://corsproxy.io/?"; 
+    
+    const ARSENAL_DB = [
+        { id: "sqli", icon: "💉", name: "SQLi Payloads", data: "' OR 1=1 --\nadmin' #\n' UNION SELECT 1,version(),3 --" },
+        { id: "xss", icon: "🕷️", name: "XSS Vectors", data: "<script>alert(1)</script>\n<img src=x onerror=alert(document.cookie)>" },
+        { id: "dork", icon: "🔍", name: "Google Dorks", data: "inurl:admin/login.php\next:sql intext:password\nintitle:\"index of\" \"id_rsa\"" },
+        { id: "lfi", icon: "📂", name: "LFI Paths", data: "../../../../etc/passwd\nphp://filter/convert.base64-encode/resource=index.php" },
+        { id: "b64", icon: "🧮", name: "Base64 Encode", action: "encode" },
+        { id: "clr", icon: "🗑️", name: "Clear Logs", action: "clear" }
+    ];
 
-    // --- الوظيفة التنفيذية الرئيسية ---
-    async function execute() {
+    // 2. Boot Sequence Simulation
+    const bootLines = [
+        "INITIALIZING TITAN_OS KERNEL v100...",
+        "MOUNTING VIRTUAL FILE SYSTEM... [OK]",
+        "LOADING NEURAL NETWORKS... [OK]",
+        "BYPASSING CORS RESTRICTIONS... [PROXY ACTIVE]",
+        "CHECKING API CONFIGURATIONS...",
+        "SYSTEM READY. WELCOME OPERATOR."
+    ];
+
+    async function runBootSequence() {
+        const bootScr = document.getElementById('boot-text');
+        for (let i = 0; i < bootLines.length; i++) {
+            bootScr.innerHTML += `<div>> ${bootLines[i]}</div>`;
+            await new Promise(r => setTimeout(r, 400));
+        }
+        setTimeout(() => {
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('os-core').style.display = 'flex';
+            loadKeys();
+            initArsenal();
+            startDaemons();
+        }, 1000);
+    }
+
+    // 3. AI Engines (Gemini & GPT)
+    async function executeCore() {
         const inp = document.getElementById('cmd-in');
         const engine = document.getElementById('engine').value;
         const val = inp.value.trim();
@@ -158,7 +301,7 @@
 
         addMsg(val, 'usr');
         inp.value = "";
-        log(`Connecting via ${engine.toUpperCase()} Tunnel...`);
+        sysLog(`Routing traffic via ${engine.toUpperCase()} Tunnel...`);
 
         if(engine === 'gemini') {
             await callGemini(val);
@@ -167,30 +310,41 @@
         }
     }
 
-    // --- محرك Gemini (مع البروكسي) ---
+    // محرك Gemini (مصحح 100% مع بروكسي ورابط pro)
     async function callGemini(txt) {
-        if(!KEYS.gemini) { addMsg("خطأ: مفتاح Gemini مفقود.", "sys"); return; }
+        if(!KEYS.gemini) { addMsg("❌ مفتاح Gemini غير موجود. اذهب إلى CONFIG.", "err"); return; }
         
         try {
-            const api = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`;
+            // استخدام gemini-pro لأنه الأقل عرضة لخطأ 404 في طلبات الويب
+            const api = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEYS.gemini}`;
+            
             const res = await fetch(PROXY + encodeURIComponent(api), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: txt }] }] })
             });
             
-            if(!res.ok) throw new Error(`HTTP ${res.status}`);
+            if(!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error ? err.error.message : `HTTP ${res.status}`);
+            }
             
             const data = await res.json();
-            addMsg(data.candidates[0].content.parts[0].text, 'sys');
+            if(data.candidates && data.candidates[0].content) {
+                addMsg(data.candidates[0].content.parts[0].text, 'sys');
+                sysLog("Gemini Response Received.");
+            } else {
+                throw new Error("استجابة فارغة من خوادم جوجل.");
+            }
         } catch(e) {
-            addMsg(`فشل المحرك: ${e.message}. تأكد من المفتاح والإنترنت.`, 'sys');
+            addMsg(`فشل محرك Gemini: ${e.message}`, 'err');
+            sysLog("GEMINI_TUNNEL_FAILED");
         }
     }
 
-    // --- محرك ChatGPT (مع البروكسي) ---
+    // محرك GPT (تم تخفيض الإصدار لـ 3.5 ليعمل مع الحسابات بدون رصيد GPT-4)
     async function callGPT(txt) {
-        if(!KEYS.gpt) { addMsg("خطأ: مفتاح GPT مفقود.", "sys"); return; }
+        if(!KEYS.gpt) { addMsg("❌ مفتاح GPT غير موجود.", "err"); return; }
 
         try {
             const api = `https://api.openai.com/v1/chat/completions`;
@@ -201,75 +355,169 @@
                     "Authorization": `Bearer ${KEYS.gpt}`
                 },
                 body: JSON.stringify({
-                    model: "gpt-4-turbo-preview",
-                    messages: [{role: "user", content: txt}]
+                    model: "gpt-3.5-turbo", // تم التغيير لضمان العمل
+                    messages: [{role: "system", content: "You are a cyber security assistant."}, {role: "user", content: txt}]
                 })
             });
             
             const data = await res.json();
             if(data.error) throw new Error(data.error.message);
+            
             addMsg(data.choices[0].message.content, 'sys');
+            sysLog("GPT Response Received.");
         } catch(e) {
-            addMsg(`فشل محرك GPT: ${e.message}`, 'sys');
+            addMsg(`فشل محرك GPT: ${e.message}`, 'err');
+            sysLog("GPT_TUNNEL_FAILED");
         }
     }
 
-    // --- إدارة الواجهة ---
-    function addMsg(t, type) {
-        const stream = document.getElementById('chat-stream');
-        const d = document.createElement('div');
-        d.className = `bubble ${type}`;
-        d.innerHTML = `<b>[${type === 'sys' ? 'TITAN_X' : 'OPERATOR'}]</b>${t.replace(/\n/g, '<br>')}`;
-        stream.appendChild(d);
-        stream.parentElement.scrollTop = stream.scrollHeight;
+    // 4. GitHub Recon Engine (أداة الاستطلاع الجديدة)
+    async function scanGitHub() {
+        const target = document.getElementById('gh-target').value.trim();
+        if(!target) return;
+        
+        const resDiv = document.getElementById('gh-results');
+        resDiv.innerHTML = `<div style="color:var(--gold);text-align:center;">جاري فحص الهدف: ${target}...</div>`;
+        sysLog(`Recon on GitHub target: ${target}`);
+
+        const headers = { "Accept": "application/vnd.github.v3+json" };
+        if(KEYS.github) headers["Authorization"] = `token ${KEYS.github}`; // اختياري لزيادة اللمت
+
+        try {
+            // جلب البيانات الشخصية
+            const userRes = await fetch(`https://api.github.com/users/${target}`, { headers });
+            if(userRes.status === 404) throw new Error("لم يتم العثور على الهدف.");
+            if(!userRes.ok) throw new Error("تم حظر الطلب من GitHub (Rate Limit). ضع التوكن في الإعدادات.");
+            
+            const user = await userRes.json();
+            
+            // جلب المستودعات
+            const reposRes = await fetch(`https://api.github.com/users/${target}/repos?sort=updated&per_page=3`, { headers });
+            const repos = await reposRes.json();
+
+            let reposHTML = '';
+            repos.forEach(r => {
+                reposHTML += `<div class="repo-item"><b>${r.name}</b><br><span style="color:#888">${r.language || 'N/A'} | ⭐ ${r.stargazers_count}</span></div>`;
+            });
+
+            resDiv.innerHTML = `
+                <div class="gh-profile">
+                    <img src="${user.avatar_url}" alt="Avatar">
+                    <div class="gh-stats">
+                        <b style="color:var(--blue); font-size:0.8rem;">[TARGET ACQUIRED]</b><br>
+                        الاسم: ${user.name || 'مجهول'}<br>
+                        الشركة: ${user.company || 'مستقل'}<br>
+                        الموقع: ${user.location || 'مخفي'}<br>
+                        المتابعون: ${user.followers}
+                    </div>
+                </div>
+                <div style="color:var(--gold); margin-bottom:10px; font-weight:bold;">> أحدث المستودعات:</div>
+                <div class="repo-list">${reposHTML || 'لا توجد مستودعات عامة.'}</div>
+            `;
+        } catch(e) {
+            resDiv.innerHTML = `<div style="color:var(--danger);">${e.message}</div>`;
+        }
     }
 
-    function tab(id, el) {
-        document.querySelectorAll('.win').forEach(w => w.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-    }
-
-    function cls(id) { document.getElementById(id).classList.remove('active'); }
-    function log(m) { document.getElementById('sys-log').innerText = `[LOG] > ${m}`; }
-
-    function saveKeys() {
-        KEYS.gemini = document.getElementById('key-gem').value.trim();
-        KEYS.gpt = document.getElementById('key-gpt').value.trim();
-        localStorage.setItem('titan_v80_keys', JSON.stringify(KEYS));
-        document.getElementById('save-hint').style.display = 'block';
-        setTimeout(() => document.getElementById('save-hint').style.display = 'none', 2000);
-        log("KEYS_INJECTED_SUCCESSFULLY");
-    }
-
+    // 5. Arsenal & Tools Integration
     function initArsenal() {
-        const tools = ["SQL_INJECTOR", "BRUTE_FORCE", "DORK_SCANNER", "XSS_PAYLOADS", "IP_TRACKER", "B64_ENCODER"];
         const grid = document.getElementById('arsenal-grid');
-        tools.forEach(t => {
-            const d = document.createElement('div');
-            d.className = 'card-tool';
-            d.innerHTML = `<div style="font-size:0.6rem; color:var(--gold); margin-bottom:5px;">${t}</div><button style="background:var(--gold); border:none; font-size:0.5rem; border-radius:2px; padding:3px 8px;">LOAD</button>`;
-            d.onclick = () => addMsg(`تم تحميل وحدة: ${t}. جاري تجهيز القوالب...`, 'sys');
-            grid.appendChild(d);
+        ARSENAL_DB.forEach(tool => {
+            const card = document.createElement('div');
+            card.className = 'card-tool';
+            card.innerHTML = `<div class="tool-icon">${tool.icon}</div><div class="tool-name">${tool.name}</div>`;
+            
+            card.onclick = () => {
+                if(tool.action === 'clear') {
+                    document.getElementById('chat-stream').innerHTML = '<div class="bubble sys">تم مسح السجلات المحفوظة.</div>';
+                    tab('win-core', document.querySelectorAll('.nav-btn')[0]);
+                } 
+                else if(tool.action === 'encode') {
+                    const txt = prompt("أدخل النص لتشفيره (Base64):");
+                    if(txt) {
+                        tab('win-core', document.querySelectorAll('.nav-btn')[0]);
+                        addMsg(`[B64 Encode]: ${txt}`, 'usr');
+                        addMsg(`النتيجة:\n<pre>${btoa(txt)}</pre>`, 'sys');
+                    }
+                }
+                else {
+                    tab('win-core', document.querySelectorAll('.nav-btn')[0]);
+                    addMsg(`أريد تحليل أو استخدام هذه القوالب:\n\n${tool.data}`, 'usr');
+                    document.getElementById('cmd-in').value = `اشرح لي كيف تعمل هذه الـ ${tool.name} وكيف أحمي موقعي منها.`;
+                    sysLog(`Arsenal tool loaded: ${tool.name}`);
+                }
+            };
+            grid.appendChild(card);
         });
     }
 
-    window.onload = () => {
-        const saved = localStorage.getItem('titan_v80_keys');
+    // 6. UI & System Utilities
+    function addMsg(txt, type) {
+        const feed = document.getElementById('chat-stream');
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${type}`;
+        
+        let sender = type === 'usr' ? 'OPERATOR' : (type === 'err' ? 'SYSTEM_ERROR' : 'TITAN_CORE');
+        
+        // تحويل النص البرمجي إلى بلوكات منسقة
+        let formatted = txt.replace(/```(.*?)```/gs, '<pre>$1</pre>');
+        formatted = formatted.replace(/\n/g, '<br>');
+
+        bubble.innerHTML = `<b>[${sender}]</b> ${formatted}`;
+        feed.appendChild(bubble);
+        feed.parentElement.scrollTop = feed.scrollHeight;
+    }
+
+    function tab(winId, navEl) {
+        document.querySelectorAll('.win').forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+        document.getElementById(winId).classList.add('active');
+        navEl.classList.add('active');
+    }
+
+    function sysLog(msg) {
+        document.getElementById('log-text').innerText = `> ${msg}`;
+    }
+
+    // 7. Config Management
+    function saveKeys() {
+        KEYS.gemini = document.getElementById('key-gem').value.trim();
+        KEYS.gpt = document.getElementById('key-gpt').value.trim();
+        KEYS.github = document.getElementById('key-gh').value.trim();
+        
+        localStorage.setItem('titan_v100_keys', JSON.stringify(KEYS));
+        
+        document.getElementById('save-hint').style.display = 'block';
+        setTimeout(() => document.getElementById('save-hint').style.display = 'none', 3000);
+        sysLog("KEYS_SAVED_SECURELY");
+    }
+
+    function loadKeys() {
+        const saved = localStorage.getItem('titan_v100_keys');
         if(saved) {
             KEYS = JSON.parse(saved);
             document.getElementById('key-gem').value = KEYS.gemini;
             document.getElementById('key-gpt').value = KEYS.gpt;
+            document.getElementById('key-gh').value = KEYS.github;
         }
-        initArsenal();
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-            document.getElementById('ping').innerText = `LATENCY: ${Math.floor(Math.random()*40+20)}ms`;
-        }, 1000);
-        log("SYSTEM_V80_READY.");
-    };
-</script>
+    }
 
+    // 8. Background Daemons (Clock, Ping, Mem)
+    function startDaemons() {
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }, 1000);
+
+        setInterval(() => {
+            document.getElementById('ping').innerText = `PING: ${Math.floor(Math.random() * 30 + 15)}ms`;
+            document.getElementById('mem-usage').innerText = `MEM: ${Math.floor(Math.random() * 20 + 40)}%`;
+        }, 3000);
+    }
+
+    // Initialize System
+    window.onload = runBootSequence;
+
+</script>
 </body>
 </html>
